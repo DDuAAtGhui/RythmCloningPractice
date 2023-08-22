@@ -26,10 +26,14 @@ public class PlayerController : MonoBehaviour
     //구르는 동안에 키 입력 들어가면 급발진 하는 문제 있으니 그거 막아줌
     //canMove가 true면 움직이기 가능
     bool canMove = true;
+
+
     TimingManager timingManager;
+    CameraController Cam;
     void Start()
     {
         timingManager = FindObjectOfType<TimingManager>();
+        Cam = FindObjectOfType<CameraController>();
     }
 
     void Update()
@@ -70,6 +74,7 @@ public class PlayerController : MonoBehaviour
         StartCoroutine(MoveCo());
         StartCoroutine(SpinCo());
         StartCoroutine(RecoilCo());
+        StartCoroutine(Cam.ZoomCam());
     }
 
     //움직임을 코루틴으로 구현
