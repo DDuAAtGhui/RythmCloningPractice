@@ -33,13 +33,17 @@ public class TimingManager : MonoBehaviour
 
     //노트 떨궜을때 콤보 초기화 시켜야하니 콤보매니저 참조
     ComboManager comboManager;
+
+    StageManager stageMager;
+    PlayerController playerController;
     void Start()
     {
         //EffectManager 스크립트 달린 오브젝트가 자식인 상태임
         effectManager = GetComponentInChildren<EffectManager>();
         scoreManager = FindObjectOfType<ScoreManager>();
         comboManager = FindObjectOfType<ComboManager>();
-
+        stageMager = FindObjectOfType<StageManager>();
+        playerController = FindObjectOfType<PlayerController>();
         //배열 길이 동일화
         //4개의 판정박스들만큼 4개의 벡터2 X,Y가 생성됨
         TimingBoxsWidth = new Vector2[TimingBoxs.Length];
@@ -84,21 +88,28 @@ public class TimingManager : MonoBehaviour
                     //i번째 제거
                     boxNoteList.RemoveAt(i);
 
-                    //Index 0부터 체크하므로 체크 순서도 Perfect ~~~ Bad 순서임
-                    effectManager.JudgementEffect(x);
-
                     //노트 이펙트 호출
                     //0~2인덱스만 이펙트 호출. 인덱스 3번은 Bad니까 이펙트 뜨면 이상하니까
                     if (x < TimingBoxsWidth.Length - 1)
                     {
                         effectManager.NoteHitEffect();
-                        //점수 증가. BAD때는 점수 증가 없게
-                        scoreManager.IncreaseScore(x);
+
+                        if (CheckCanNextPlate())
+                        {
+                            //점수 증가. BAD때는 점수 증가 없게
+                            scoreManager.IncreaseScore(x);
+                            stageMager.ShowNextPlate();
+
+                            //Index 0부터 체크하므로 체크 순서도 Perfect ~~~ Bad 순서임
+                            effectManager.JudgementEffect(x);
+                        }
+                        else
+                            effectManager.JudgementEffect(5);
+
                     }
 
                     //X인덱스가 BAD이면
-                    else if (x == TimingBoxsWidth.Length-1) comboManager.ResetCombo();
-
+                    else if (x == TimingBoxsWidth.Length - 1) comboManager.ResetCombo();
 
                     //체크 끝났으면 의미없는 반복 할 필요 없으니 바로 종료하고 true 반환
                     return true;
@@ -110,6 +121,24 @@ public class TimingManager : MonoBehaviour
         effectManager.JudgementEffect(4);
 
         //Miss시 false 반환
+        return false;
+    }
+
+    bool CheckCanNextPlate()
+    {
+        if (Physics.Raycast(playerController.destination, Vector3.down, out RaycastHit hitInfo, 1.1f))
+        {
+            if (hitInfo.transform.CompareTag("BasicPlate"))
+            {
+                BasicPlate plate = hitInfo.transform.GetComponent<BasicPlate>();
+                if (plate.flag)
+                {
+                    plate.flag = false;
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 }

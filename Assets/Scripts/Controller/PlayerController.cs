@@ -7,7 +7,7 @@ public class PlayerController : MonoBehaviour
     [Header("Move Info")]
     [SerializeField] float MoveSpeed = 3f;
     Vector3 dir = new Vector3();
-    Vector3 destination = new Vector3();
+    public Vector3 destination = new Vector3();
     //그냥 미끌어지듯이 움직이면 어색하니까 회전 넣어줄것
     [SerializeField] float spinSpeed = 270f;
     Vector3 spinDir = new Vector3();
@@ -26,7 +26,7 @@ public class PlayerController : MonoBehaviour
     //구르는 동안에 키 입력 들어가면 급발진 하는 문제 있으니 그거 막아줌
     //canMove가 true면 움직이기 가능
     bool canMove = true;
-
+    public static bool s_canPressKey = true;
 
     TimingManager timingManager;
     CameraController Cam;
@@ -40,8 +40,13 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.D))
         {
-            if (canMove)
-            {  //판정 박스 안에 노트가 있을때 키 입력한게 true일때만 움직이기
+            if (canMove && s_canPressKey)
+            {
+                //타이밍 체크 전에 미리 계산
+                //(플레이어 움직임 방향이 플레이트와 일치할 때 플레이트 나오게 해야함)
+                Calc();
+
+                //판정 박스 안에 노트가 있을때 키 입력한게 true일때만 움직이기
                 if (timingManager.CheckTheTiming())
                 {
                     StartAction();
@@ -51,6 +56,15 @@ public class PlayerController : MonoBehaviour
     }
 
     public void StartAction()
+    {
+
+        StartCoroutine(MoveCo());
+        StartCoroutine(SpinCo());
+        StartCoroutine(RecoilCo());
+        StartCoroutine(Cam.ZoomCam());
+    }
+
+    private void Calc()
     {
         //방향 계산
         //X축(좌 우)이 위 아래 입력키
@@ -70,11 +84,6 @@ public class PlayerController : MonoBehaviour
         fakeCube.RotateAround(transform.position, spinDir, spinSpeed);
         //위 회전값을 spinDestination에 넣어줌
         spinDestination = fakeCube.rotation;
-
-        StartCoroutine(MoveCo());
-        StartCoroutine(SpinCo());
-        StartCoroutine(RecoilCo());
-        StartCoroutine(Cam.ZoomCam());
     }
 
     //움직임을 코루틴으로 구현
