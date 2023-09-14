@@ -52,4 +52,9 @@ public class ScoreManager : MonoBehaviour
 
         anim.SetTrigger(ScoreUp);
     }
+
+    public int GetCurrentScore()
+    {
+        return CurrentScore;
+    }
 }

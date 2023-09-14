@@ -4,10 +4,14 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    Rigidbody rb;
+
     [Header("Move Info")]
     [SerializeField] float MoveSpeed = 3f;
     Vector3 dir = new Vector3();
     public Vector3 destination = new Vector3();
+    Vector3 origin_pos;
+
     //그냥 미끌어지듯이 움직이면 어색하니까 회전 넣어줄것
     [SerializeField] float spinSpeed = 270f;
     Vector3 spinDir = new Vector3();
@@ -30,17 +34,24 @@ public class PlayerController : MonoBehaviour
 
     TimingManager timingManager;
     CameraController Cam;
+    StatusManager statusManager;
+
+    bool isFalling = false;
     void Start()
     {
         timingManager = FindObjectOfType<TimingManager>();
         Cam = FindObjectOfType<CameraController>();
+        rb = GetComponentInChildren<Rigidbody>();
+        statusManager = FindObjectOfType<StatusManager>();
+        origin_pos = transform.position;
     }
 
     void Update()
     {
+        CheckFalling();
         if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.D))
         {
-            if (canMove && s_canPressKey)
+            if (canMove && s_canPressKey && !isFalling)
             {
                 //타이밍 체크 전에 미리 계산
                 //(플레이어 움직임 방향이 플레이트와 일치할 때 플레이트 나오게 해야함)
@@ -164,5 +175,43 @@ public class PlayerController : MonoBehaviour
         //움직임이 끝나면 다시 움직일 수 있게 bool값 true로 
         canMove = true;
 
+    }
+
+    void CheckFalling()
+    {
+        if (!isFalling && canMove)
+        {
+            if (!Physics.Raycast(transform.position, Vector3.down, 1.1f))
+            {
+                Falling();
+            }
+        }
+    }
+
+    void Falling()
+    {
+        if (!isFalling)
+        {
+            isFalling = true;
+            rb.useGravity = true;
+            rb.isKinematic = false;
+        }
+    }
+
+    public void ResetFalling()
+    {
+        statusManager.DecreaseHP(1);
+
+        if (!statusManager.Dead())
+        {
+            isFalling = false;
+            rb.useGravity = false;
+            rb.isKinematic = true;
+
+            transform.position = origin_pos;
+
+            //자식 객체도 원위치
+            realCube.localPosition = Vector3.zero;
+        }
     }
 }

@@ -8,6 +8,10 @@ public class TimingManager : MonoBehaviour
     //생성된 노트들을 담을 리스트. 판정 박스 안에 리스트 안 노트들이 들어있는지 확인해야함
     public List<GameObject> boxNoteList = new List<GameObject>();
 
+    //판정들을 기록할 배열변수
+    //결과창에서 Normal 안띄울꺼니까 Normal은 기록 안할거임
+    int[] judgeRecord = new int[5];
+
     //판정의 중심지점
     [SerializeField] Transform Center;
 
@@ -101,7 +105,9 @@ public class TimingManager : MonoBehaviour
                             stageMager.ShowNextPlate();
 
                             //Index 0부터 체크하므로 체크 순서도 Perfect ~~~ Bad 순서임
-                            effectManager.JudgementEffect(x);
+                            effectManager.JudgementEffect(x); //판정연출
+
+                            judgeRecord[x]++; //판정기록
                         }
                         else
                             effectManager.JudgementEffect(5);
@@ -119,6 +125,7 @@ public class TimingManager : MonoBehaviour
         comboManager.ResetCombo();
         //검색 실패시 Miss 출력
         effectManager.JudgementEffect(4);
+        MissRecord(); //Miss 판정기록
 
         //Miss시 false 반환
         return false;
@@ -141,4 +148,12 @@ public class TimingManager : MonoBehaviour
 
         return false;
     }
+
+    public int[] GetJudgeRecord()
+    {
+        return judgeRecord;
+    }
+
+    public void MissRecord() => judgeRecord[4]++; //Miss 판정기록
+
 }

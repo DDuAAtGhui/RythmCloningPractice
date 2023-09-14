@@ -67,6 +67,7 @@ public class NoteManager : MonoBehaviour
             {   //화면 밖으로 벗어나면 Miss출력
                 effectManager.JudgementEffect(4);
                 comboManager.ResetCombo();
+                timingManager.MissRecord(); //완전 놓쳤을때도 Miss 기록
             }
 
 
