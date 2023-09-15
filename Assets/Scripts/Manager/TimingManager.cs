@@ -40,6 +40,7 @@ public class TimingManager : MonoBehaviour
 
     StageManager stageMager;
     PlayerController playerController;
+    StatusManager statusManager;
     void Start()
     {
         //EffectManager 스크립트 달린 오브젝트가 자식인 상태임
@@ -48,6 +49,7 @@ public class TimingManager : MonoBehaviour
         comboManager = FindObjectOfType<ComboManager>();
         stageMager = FindObjectOfType<StageManager>();
         playerController = FindObjectOfType<PlayerController>();
+        statusManager = FindObjectOfType<StatusManager>();
         //배열 길이 동일화
         //4개의 판정박스들만큼 4개의 벡터2 X,Y가 생성됨
         TimingBoxsWidth = new Vector2[TimingBoxs.Length];
@@ -98,6 +100,8 @@ public class TimingManager : MonoBehaviour
                     {
                         effectManager.NoteHitEffect();
 
+
+
                         if (CheckCanNextPlate())
                         {
                             //점수 증가. BAD때는 점수 증가 없게
@@ -108,9 +112,11 @@ public class TimingManager : MonoBehaviour
                             effectManager.JudgementEffect(x); //판정연출
 
                             judgeRecord[x]++; //판정기록
+                            statusManager.CheckShield();
                         }
                         else
                             effectManager.JudgementEffect(5);
+
 
                     }
 
@@ -126,6 +132,7 @@ public class TimingManager : MonoBehaviour
         //검색 실패시 Miss 출력
         effectManager.JudgementEffect(4);
         MissRecord(); //Miss 판정기록
+
 
         //Miss시 false 반환
         return false;
@@ -154,6 +161,9 @@ public class TimingManager : MonoBehaviour
         return judgeRecord;
     }
 
-    public void MissRecord() => judgeRecord[4]++; //Miss 판정기록
-
+    public void MissRecord()
+    {
+        statusManager.ResetShieldCombo();
+        judgeRecord[4]++; //Miss 판정기록
+    }
 }
